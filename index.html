@@ -4,15 +4,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Redirecting...</title>
   <script>
-    // Get ?url= parameter from the link
-    const params = new URLSearchParams(window.location.search);
-    const amazonURL = params.get("url");
+    // Extract the code from the path, e.g., /amzn/encodedURL
+    const pathParts = window.location.pathname.split('/');
+    let encodedURL = null;
 
-    if (amazonURL) {
-      // Try to open the Amazon app (deep link attempt)
-      window.location.href = amazonURL;
+    if (pathParts.length >= 3 && pathParts[1].toLowerCase() === 'amzn') {
+      encodedURL = pathParts[2];
+    }
+
+    if (encodedURL) {
+      try {
+        // Decode Base64 to get the original Amazon URL
+        const decodedURL = atob(encodedURL);
+        window.location.href = decodedURL;
+      } catch (e) {
+        console.error("Invalid code", e);
+        // fallback if decoding fails
+        window.location.href = "https://www.facebook.com/groups/719667530963435";
+      }
     } else {
-      // Default fallback (your Amazon storefront or homepage)
+      // Default fallback
       window.location.href = "https://www.facebook.com/groups/719667530963435";
     }
   </script>
