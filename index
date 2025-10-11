@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="refresh" content="0; url=https://www.amazon.com" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redirecting...</title>
   <script>
-    // Get the ?url= parameter from the link
+    // Get ?url= parameter from the link
     const params = new URLSearchParams(window.location.search);
     const amazonURL = params.get("url");
+
     if (amazonURL) {
-      // Try to open the Amazon app
+      // Try to open the Amazon app (deep link attempt)
       window.location.href = amazonURL;
+    } else {
+      // Default fallback (your Amazon storefront or homepage)
+      window.location.href = "https://www.amazon.com";
     }
   </script>
 </head>
 <body>
-  <p>Opening Amazon app…</p>
+  <p>Redirecting to Amazon…</p>
 </body>
 </html>
