@@ -1,4 +1,4 @@
 [[redirects]]
   from = "/p/*"
-  to = "/redirect.html?asin=:splat"
+  to = "/public/redirect.html?asin=:splat"
   status = 200
