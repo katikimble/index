@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Opening Amazon…</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,71 +36,77 @@
     }
   </style>
 </head>
+
 <body>
   <h2>Opening Amazon…</h2>
   <p>If nothing happens automatically, <a id="fallback-link" href="#">click here</a>.</p>
+
   <div id="browser-warning">
-    <p>It looks like you're in an in-app browser (Facebook, Instagram, etc.).</p>
-    <p>To open Amazon properly, please tap the button below:</p>
+    <p>It looks like you're using an in-app browser (Facebook, Instagram, etc.).</p>
+    <p>To open Amazon properly, tap below:</p>
     <button id="open-in-browser">Open in Browser</button>
   </div>
 
   <script>
-    // ----- Get the path after domain -----
-    let path = window.location.pathname; // e.g., "/B09G3HRMVB" or "/A2SK1OY9WLWJ3D"
-    const codeOrAsin = path.replace(/^\/+/, ''); // remove leading slash
     const affiliateTag = "dailydealsa0f-20";
 
-    if (!codeOrAsin) {
-      document.body.innerHTML = "<p>Error: Amazon code or ASIN missing in the URL!</p>";
-      throw new Error("Missing code/ASIN");
+    // Get clean path (/B09... or /A3W...)
+    const path = window.location.pathname.replace(/^\/+/, "");
+    const query = window.location.search || "";
+
+    if (!path) {
+      document.body.innerHTML = "<p>Error: Missing Amazon product or promo code.</p>";
+      throw new Error("Missing path");
     }
 
-    // ----- Detect type -----
-    // If it starts with "B0" → treat as product ASIN
-    const isASIN = /^B0/i.test(codeOrAsin);
+    // Detect product ASIN (most modern ASINs)
+    const isASIN = /^B0[A-Z0-9]{8}$/i.test(path);
 
-    let webLink, appLink;
+    const hasTag = /[?&]tag=/.test(query);
+
+    let webLink = "";
+    let appLink = null;
 
     if (isASIN) {
-      // Product ASIN
-      webLink = `https://www.amazon.com/dp/${codeOrAsin}?tag=${affiliateTag}`;
-      appLink = `amazon://dp/${codeOrAsin}?tag=${affiliateTag}`;
+      // ----- PRODUCT -----
+      webLink = `https://www.amazon.com/dp/${path}${query || `?tag=${affiliateTag}`}`;
+
+      if (!hasTag) {
+        webLink += (query ? "&" : "?") + `tag=${affiliateTag}`;
+      }
+
+      appLink = `amazon://dp/${path}?tag=${affiliateTag}`;
+
     } else {
-      // Promo code
-      webLink = `https://www.amazon.com/promocode/${codeOrAsin}`;
-      appLink = null; // Amazon app link not reliable for promo codes
+      // ----- PROMO -----
+      if (hasTag) {
+        webLink = `https://www.amazon.com/promocode/${path}${query}`;
+      } else {
+        const separator = query ? "&" : "?";
+        webLink = `https://www.amazon.com/promocode/${path}${query}${separator}tag=${affiliateTag}`;
+      }
     }
 
     // Set fallback link
     document.getElementById("fallback-link").href = webLink;
 
-    // ----- Detect in-app browsers -----
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    // Detect in-app browsers
+    const ua = navigator.userAgent || "";
     const inAppBrowser = /(FBAN|FBAV|Instagram|Line|Twitter|Snapchat)/i.test(ua);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
 
     if (inAppBrowser) {
-      // Show warning + button
       document.getElementById("browser-warning").style.display = "block";
-      document.getElementById("open-in-browser").addEventListener("click", () => {
+      document.getElementById("open-in-browser").onclick = () => {
         window.location.href = webLink;
-      });
+      };
+    } else if (isMobile && appLink) {
+      window.location.href = appLink;
+      setTimeout(() => {
+        window.location.href = webLink;
+      }, 2000);
     } else {
-      // Normal browsers
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
-
-      if (isMobile && appLink) {
-        // Try app first for ASIN products
-        window.location.href = appLink;
-
-        // Fallback to web after 2s
-        setTimeout(() => {
-          window.location.href = webLink;
-        }, 2000);
-      } else {
-        // Promo codes or desktop
-        window.location.href = webLink;
-      }
+      window.location.href = webLink;
     }
   </script>
 </body>
