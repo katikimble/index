@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opening Amazon…</title>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const appUrl = params.get("app");
+    const webUrl = params.get("web");
+
+    function openAmazon() {
+      window.location.href = appUrl;
+      setTimeout(() => {
+        window.location.href = webUrl;
+      }, 1200);
+    }
+
+    window.onload = openAmazon;
+  </script>
+</head>
+<body>
+  <p>Opening Amazon…</p>
+  <p>If nothing happens, <a id="fallback">tap here</a>.</p>
+
+  <script>
+    document.getElementById("fallback").href =
+      new URLSearchParams(window.location.search).get("web");
+  </script>
+</body>
+</html>
