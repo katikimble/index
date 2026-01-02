@@ -1,4 +1,0 @@
-[[redirects]]
-  from = "/p/*"
-  to = "/public/redirect.html?asin=:splat"
-  status = 200
