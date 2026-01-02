@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opening Amazon…</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
+    a { color: #0073bb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h2>Opening Amazon…</h2>
+  <p>If nothing happens automatically, <a id="fallback-link" href="#">click here</a>.</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const asin = params.get("asin");
+    const affiliateTag = "dailydealsa0f-20";
+
+    if (!asin) {
+      window.location.href = "/";
+    }
+
+    const appLink = `amazon://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
+    const webLink = `https://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
+
+    // Detect mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      // Try opening the Amazon app first
+      window.location.href = appLink;
+
+      // Fallback to web after 2 seconds
+      setTimeout(() => {
+        window.location.href = webLink;
+      }, 2000);
+    } else {
+      // Directly open web link on desktop
+      window.location.href = webLink;
+    }
+
+    // Update fallback link
+    const fallbackLink = document.getElementById("fallback-link");
+    fallbackLink.href = webLink;
+  </script>
+</body>
+</html>
