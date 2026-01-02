@@ -1,35 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Opening Amazon…</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
-    a { color: #0073bb; text-decoration: none; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 3rem;
+      background: #f7f7f7;
+      color: #333;
+    }
+    a, button {
+      color: #0073bb;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      background: #fff;
+      border: 2px solid #0073bb;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
-  <h2>Opening Amazon…</h2>
+  <h2>Opening Amazon Product…</h2>
   <p>If nothing happens automatically, <a id="fallback-link" href="#">click here</a>.</p>
 
   <script>
+    // Get ASIN from URL
     const params = new URLSearchParams(window.location.search);
-    const asin = params.get("asin");
-    const affiliateTag = "dailydealsa0f-20";
+    const asin = params.get("asin"); // e.g., ?asin=B09G3HRMVB
+    const affiliateTag = "dailydealsa0f-20"; // Your affiliate tag
 
     if (!asin) {
-      window.location.href = "/";
+      document.body.innerHTML = "<p>Error: ASIN missing! Please provide a valid Amazon product ASIN in the URL.</p>";
+      throw new Error("ASIN missing in URL");
     }
 
-    const appLink = `amazon://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
+    // App and web links
+    const appLink = `amazon://dp/${asin}?tag=${affiliateTag}`;
     const webLink = `https://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
 
-    // Detect mobile
+    // Detect mobile devices
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+    // Automatic redirect
     if (isMobile) {
-      // Try opening the Amazon app first
+      // Try app first
       window.location.href = appLink;
 
       // Fallback to web after 2 seconds
@@ -37,13 +60,12 @@
         window.location.href = webLink;
       }, 2000);
     } else {
-      // Directly open web link on desktop
+      // Desktop: open web directly
       window.location.href = webLink;
     }
 
-    // Update fallback link
-    const fallbackLink = document.getElementById("fallback-link");
-    fallbackLink.href = webLink;
+    // Update fallback link for users
+    document.getElementById("fallback-link").href = webLink;
   </script>
 </body>
 </html>
