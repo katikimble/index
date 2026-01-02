@@ -33,10 +33,10 @@
   <p>If nothing happens automatically, <a id="fallback-link" href="#">click here</a>.</p>
 
   <script>
-    // Get ASIN from URL
-    const params = new URLSearchParams(window.location.search);
-    const asin = params.get("asin"); // e.g., ?asin=B09G3HRMVB
-    const affiliateTag = "dailydealsa0f-20"; // Your affiliate tag
+    // Get ASIN from URL path instead of query string
+    let path = window.location.pathname;       // e.g., "/B09G3HRMVB"
+    const asin = path.replace(/^\/+/, '');     // remove leading slash
+    const affiliateTag = "dailydealsa0f-20";   // affiliate tag
 
     if (!asin) {
       document.body.innerHTML = "<p>Error: ASIN missing! Please provide a valid Amazon product ASIN in the URL.</p>";
@@ -69,3 +69,4 @@
   </script>
 </body>
 </html>
+
