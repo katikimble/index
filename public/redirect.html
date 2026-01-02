@@ -3,29 +3,28 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Opening Amazon…</title>
-
   <script>
     const params = new URLSearchParams(window.location.search);
-    const appUrl = params.get("app");
-    const webUrl = params.get("web");
+    const asin = params.get("asin");
+    const affiliateTag = "YOURTAG-20";
 
-    function openAmazon() {
-      window.location.href = appUrl;
-      setTimeout(() => {
-        window.location.href = webUrl;
-      }, 1200);
+    if (!asin) {
+      window.location.href = "/";
     }
 
-    window.onload = openAmazon;
+    const appLink = `amazon://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
+    const webLink = `https://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
+
+    // Try app
+    window.location.href = appLink;
+
+    // Fallback to web
+    setTimeout(() => {
+      window.location.href = webLink;
+    }, 1500);
   </script>
 </head>
 <body>
   <p>Opening Amazon…</p>
-  <p>If nothing happens, <a id="fallback">tap here</a>.</p>
-
-  <script>
-    document.getElementById("fallback").href =
-      new URLSearchParams(window.location.search).get("web");
-  </script>
 </body>
 </html>
