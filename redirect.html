@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Opening Amazon…</title>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -36,21 +35,20 @@
     }
   </style>
 </head>
-
 <body>
   <h2>Opening Amazon…</h2>
-<p>If you want to continue shopping in this browser (Facebook, Instagram, etc.), <a id="fallback-link" href="#">click here</a>.</p>
+  <p>If you want to continue shopping in this browser (Facebook, Instagram, etc.), <a id="fallback-link" href="#">click here</a>.</p>
 
-<div id="browser-warning">
-  <p>It looks like you're using an in-app browser (Facebook, Instagram, etc.).</p>
-  <p>To open Amazon properly, tap below:</p>
-  <button id="open-in-browser">Open in Browser</button>
-</div>
+  <div id="browser-warning">
+    <p>It looks like you're using an in-app browser (Facebook, Instagram, etc.).</p>
+    <p>To open Amazon properly, tap below:</p>
+    <button id="open-in-browser">Open in Amazon App</button>
+  </div>
 
   <script>
     const affiliateTag = "dailydealsa0f-20";
 
-    // Get clean path (/B09... or /A3W...)
+    // Clean path and query
     const path = window.location.pathname.replace(/^\/+/, "");
     const query = window.location.search || "";
 
@@ -59,53 +57,63 @@
       throw new Error("Missing path");
     }
 
-    // Detect product ASIN (most modern ASINs)
+    // Detect ASIN
     const isASIN = /^B0[A-Z0-9]{8}$/i.test(path);
-
     const hasTag = /[?&]tag=/.test(query);
 
     let webLink = "";
     let appLink = null;
 
     if (isASIN) {
-      // ----- PRODUCT -----
+      // Product page
       webLink = `https://www.amazon.com/dp/${path}${query || `?tag=${affiliateTag}`}`;
-
-      if (!hasTag) {
-        webLink += (query ? "&" : "?") + `tag=${affiliateTag}`;
-      }
-
+      if (!hasTag) webLink += (query ? "&" : "?") + `tag=${affiliateTag}`;
       appLink = `amazon://dp/${path}?tag=${affiliateTag}`;
-
     } else {
-      // ----- PROMO -----
+      // Promo page
       if (hasTag) {
         webLink = `https://www.amazon.com/promocode/${path}${query}`;
       } else {
-        const separator = query ? "&" : "?";
-        webLink = `https://www.amazon.com/promocode/${path}${query}${separator}tag=${affiliateTag}`;
+        const sep = query ? "&" : "?";
+        webLink = `https://www.amazon.com/promocode/${path}${query}${sep}tag=${affiliateTag}`;
       }
     }
 
-    // Set fallback link
-    document.getElementById("fallback-link").href = webLink;
+    // ---------------- Fallback link: continue in browser ----------------
+    const fallbackLink = document.getElementById("fallback-link");
+    fallbackLink.href = webLink;
+    fallbackLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Open web link only — do NOT trigger app redirect
+      window.location.href = webLink;
+    });
 
-    // Detect in-app browsers
+    // ---------------- Detect in-app browsers ----------------
     const ua = navigator.userAgent || "";
     const inAppBrowser = /(FBAN|FBAV|Instagram|Line|Twitter|Snapchat)/i.test(ua);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
 
+    const openButton = document.getElementById("open-in-browser");
+
     if (inAppBrowser) {
+      // Show button for in-app browsers
       document.getElementById("browser-warning").style.display = "block";
-      document.getElementById("open-in-browser").onclick = () => {
-        window.location.href = webLink;
+      openButton.onclick = () => {
+        window.location.href = appLink;
+        setTimeout(() => {
+          window.location.href = webLink;
+        }, 2000);
       };
     } else if (isMobile && appLink) {
-      window.location.href = appLink;
+      // Automatically open app on mobile if user does nothing
       setTimeout(() => {
-        window.location.href = webLink;
-      }, 2000);
+        window.location.href = appLink;
+        setTimeout(() => {
+          window.location.href = webLink;
+        }, 2000);
+      }, 500);
     } else {
+      // Desktop or no app: just open web link
       window.location.href = webLink;
     }
   </script>
