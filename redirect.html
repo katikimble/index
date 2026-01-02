@@ -84,8 +84,7 @@
     fallbackLink.href = webLink;
     fallbackLink.addEventListener("click", (e) => {
       e.preventDefault();
-      // Open web link only — do NOT trigger app redirect
-      window.location.href = webLink;
+      window.location.href = webLink; // just stay in browser
     });
 
     // ---------------- Detect in-app browsers ----------------
@@ -95,22 +94,39 @@
 
     const openButton = document.getElementById("open-in-browser");
 
+    // Button reliably opens Amazon app using iframe trick
+    openButton.onclick = () => {
+      const start = Date.now();
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = appLink;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        const elapsed = Date.now() - start;
+        if (elapsed < 1200) {
+          window.location.href = webLink; // fallback if app not installed
+        }
+        document.body.removeChild(iframe);
+      }, 1000);
+    };
+
     if (inAppBrowser) {
       // Show button for in-app browsers
       document.getElementById("browser-warning").style.display = "block";
-      openButton.onclick = () => {
-        window.location.href = appLink;
-        setTimeout(() => {
-          window.location.href = webLink;
-        }, 2000);
-      };
     } else if (isMobile && appLink) {
       // Automatically open app on mobile if user does nothing
       setTimeout(() => {
-        window.location.href = appLink;
+        const start = Date.now();
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = appLink;
+        document.body.appendChild(iframe);
         setTimeout(() => {
-          window.location.href = webLink;
-        }, 2000);
+          const elapsed = Date.now() - start;
+          if (elapsed < 1200) window.location.href = webLink;
+          document.body.removeChild(iframe);
+        }, 1000);
       }, 500);
     } else {
       // Desktop or no app: just open web link
