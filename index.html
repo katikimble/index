@@ -1,21 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redirecting...</title>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const amazonURL = params.get("url");
-
-    if (amazonURL) {
-      window.location.href = amazonURL;
-    } else {
-      window.location.href = "https://www.facebook.com/groups/719667530963435";
-    }
-  </script>
+  <title>Amazon Redirect Test</title>
 </head>
 <body>
-  <p>Redirecting to Amazon…</p>
+  <h1>Amazon Redirect Test</h1>
+  <p>Click a link to test redirect:</p>
+  <a href="redirect.html?asin=B09G3HRMVB">Open ASIN B09G3HRMVB</a>
 </body>
 </html>
-
