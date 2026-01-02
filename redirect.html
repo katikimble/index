@@ -14,10 +14,12 @@
       color: #333;
     }
     a, button {
-      color: #0073bb;
-      text-decoration: none;
       font-weight: bold;
       margin-top: 1rem;
+    }
+    a {
+      color: #0073bb;
+      text-decoration: none;
     }
     button {
       padding: 1rem 2rem;
@@ -26,6 +28,7 @@
       background: #fff;
       border: 2px solid #0073bb;
       border-radius: 6px;
+      color: #0073bb;
     }
     #browser-warning {
       margin-top: 2rem;
@@ -39,18 +42,16 @@
 
 <body>
   <h2>Opening Amazon…</h2>
-  <p>If nothing happens automatically, <a id="fallback-link" href="#">click here</a>.</p>
+  <p>If you want to continue shopping here in this browser, <a id="fallback-link" href="#">click here</a>.</p>
 
   <div id="browser-warning">
-    <p>It looks like you're using an in-app browser (Facebook, Instagram, etc.).</p>
-    <p>To open Amazon properly, tap below:</p>
-    <button id="open-in-browser">Open in Browser</button>
+    <p>For the best experience, open in the Amazon app:</p>
+    <button id="open-in-app">Open in Amazon App</button>
   </div>
 
   <script>
     const affiliateTag = "dailydealsa0f-20";
 
-    // Get clean path (/B09... or /A3W...)
     const path = window.location.pathname.replace(/^\/+/, "");
     const query = window.location.search || "";
 
@@ -59,53 +60,61 @@
       throw new Error("Missing path");
     }
 
-    // Detect product ASIN (most modern ASINs)
+    // Detect ASIN
     const isASIN = /^B0[A-Z0-9]{8}$/i.test(path);
-
     const hasTag = /[?&]tag=/.test(query);
 
     let webLink = "";
     let appLink = null;
 
     if (isASIN) {
-      // ----- PRODUCT -----
+      // Product page
       webLink = `https://www.amazon.com/dp/${path}${query || `?tag=${affiliateTag}`}`;
-
-      if (!hasTag) {
-        webLink += (query ? "&" : "?") + `tag=${affiliateTag}`;
-      }
-
+      if (!hasTag) webLink += (query ? "&" : "?") + `tag=${affiliateTag}`;
       appLink = `amazon://dp/${path}?tag=${affiliateTag}`;
-
     } else {
-      // ----- PROMO -----
+      // Promo page
       if (hasTag) {
         webLink = `https://www.amazon.com/promocode/${path}${query}`;
       } else {
-        const separator = query ? "&" : "?";
-        webLink = `https://www.amazon.com/promocode/${path}${query}${separator}tag=${affiliateTag}`;
+        const sep = query ? "&" : "?";
+        webLink = `https://www.amazon.com/promocode/${path}${query}${sep}tag=${affiliateTag}`;
       }
     }
 
-    // Set fallback link
-    document.getElementById("fallback-link").href = webLink;
+    // Fallback link just opens in current browser
+    const fallbackLink = document.getElementById("fallback-link");
+    fallbackLink.href = webLink;
+    fallbackLink.onclick = () => {
+      // Optional: track if user chooses to stay in the browser
+      console.log("User opted to stay in browser");
+    };
 
     // Detect in-app browsers
     const ua = navigator.userAgent || "";
     const inAppBrowser = /(FBAN|FBAV|Instagram|Line|Twitter|Snapchat)/i.test(ua);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
 
-    if (inAppBrowser) {
+    const openButton = document.getElementById("open-in-app");
+
+    if (inAppBrowser && appLink) {
+      // Show "Open in App" button
       document.getElementById("browser-warning").style.display = "block";
-      document.getElementById("open-in-browser").onclick = () => {
-        window.location.href = webLink;
+      openButton.onclick = () => {
+        window.location.href = appLink;
+        // fallback to web link if app doesn't open
+        setTimeout(() => {
+          window.location.href = webLink;
+        }, 2000);
       };
     } else if (isMobile && appLink) {
+      // Automatically try to open in app on mobile
       window.location.href = appLink;
       setTimeout(() => {
         window.location.href = webLink;
       }, 2000);
     } else {
+      // Desktop or no app: just open web link
       window.location.href = webLink;
     }
   </script>
