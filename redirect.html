@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Opening Amazon…</title>
+  <title>Opening Amazon Product…</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -26,46 +26,69 @@
       border: 2px solid #0073bb;
       border-radius: 6px;
     }
+    #browser-warning {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #ff9900;
+      background: #fff7e6;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <h2>Opening Amazon Product…</h2>
   <p>If nothing happens automatically, <a id="fallback-link" href="#">click here</a>.</p>
+  <div id="browser-warning">
+    <p>It looks like you're in an app browser (Facebook, Instagram, etc.).</p>
+    <p>To open the Amazon app, please tap the button below:</p>
+    <button id="open-in-browser">Open in Browser</button>
+  </div>
 
   <script>
-    // Get ASIN from URL
-    const params = new URLSearchParams(window.location.search);
-    const asin = params.get("asin"); // e.g., ?asin=B09G3HRMVB
-    const affiliateTag = "dailydealsa0f-20"; // Your affiliate tag
+    // ----- Get ASIN from URL path -----
+    let path = window.location.pathname;      // e.g., "/B09G3HRMVB"
+    const asin = path.replace(/^\/+/, '');    // remove leading slash
+    const affiliateTag = "dailydealsa0f-20";  // Your affiliate tag
 
     if (!asin) {
       document.body.innerHTML = "<p>Error: ASIN missing! Please provide a valid Amazon product ASIN in the URL.</p>";
       throw new Error("ASIN missing in URL");
     }
 
-    // App and web links
     const appLink = `amazon://dp/${asin}?tag=${affiliateTag}`;
     const webLink = `https://www.amazon.com/dp/${asin}?tag=${affiliateTag}`;
 
-    // Detect mobile devices
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    // Automatic redirect
-    if (isMobile) {
-      // Try app first
-      window.location.href = appLink;
-
-      // Fallback to web after 2 seconds
-      setTimeout(() => {
-        window.location.href = webLink;
-      }, 2000);
-    } else {
-      // Desktop: open web directly
-      window.location.href = webLink;
-    }
-
-    // Update fallback link for users
     document.getElementById("fallback-link").href = webLink;
+
+    // ----- Detect if in-app browser (Facebook, Instagram, TikTok, etc.) -----
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const inAppBrowser = /(FBAN|FBAV|Instagram|Line|Twitter|Snapchat)/i.test(ua);
+
+    if (inAppBrowser) {
+      // Show browser warning and button
+      document.getElementById("browser-warning").style.display = "block";
+
+      document.getElementById("open-in-browser").addEventListener("click", () => {
+        // Redirect to web link which can open the app via universal link
+        window.location.href = webLink;
+      });
+    } else {
+      // Normal browsers: attempt app redirect
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Try app first
+        window.location.href = appLink;
+
+        // Fallback to web after 2 seconds
+        setTimeout(() => {
+          window.location.href = webLink;
+        }, 2000);
+      } else {
+        // Desktop: open web directly
+        window.location.href = webLink;
+      }
+    }
   </script>
 </body>
 </html>
