@@ -51,8 +51,9 @@
     const query = window.location.search || "";
 
     if (!path) {
-      document.body.innerHTML = "<p>Error: Missing Amazon product or promo code.</p>";
-      throw new Error("Missing path");
+      // Redirect to Facebook group if no item is specified
+      window.location.href = "https://www.facebook.com/groups/dailydealsandsavings";
+      throw new Error("Missing path, redirected to Facebook group");
     }
 
     const isASIN = /^B0[A-Z0-9]{8}$/i.test(path);
